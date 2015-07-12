@@ -34,10 +34,9 @@ for (( i = 0; i < "${#varArr[@]}"; i++ )); do
 			exit
 			;;
 		*)
-			otherflags+=($arg)
+			otherflags+=("$arg ")
 	esac
 done
-
 
 
 # make sure we're in tmux. If we are...
