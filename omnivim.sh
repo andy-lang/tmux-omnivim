@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-# TODO:
-# - fix unusual command line arguments (eg -e)
-# - fix stuff like +PluginInstall so that they work again
-
-
 # if you have a custom alias for vim (eg default flag commands), change this variable as necessary in order to maintain it.
 vim_command="gvim"
 vim_flags="-v"
