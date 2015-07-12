@@ -24,7 +24,7 @@ Please note that this is still very much a work in progress. The main outline of
 ## Requirements
 Most of these requirements come by default, but it's still nice to let you know.
 * **Tmux** (duh)
-  * I've tested 1.9 and 1.9a and they both work fine. Basically so long as you have a version of Tmux that has the send-keys command (which has been around since 2008), then the script *should* work fine. Let me know if they don't, and I'll take a look.
+  * I've tested 1.9 and 1.9a and they both work fine. Basically so long as you have a version of Tmux that has the `send-keys` command (which has been around since 2008), then the script *should* work fine. Let me know if they don't, and I'll take a look.
 
 * **Vim** (duh)
   * The only caveat here is that Vim **must** be compiled with the `clientserver` option. There is no way around this, as the script relies heavily on the use of the --servername flag.
