@@ -13,7 +13,6 @@ otherflags=()
 # parse long arguments
 for (( i = 0; i < "${#varArr[@]}"; i++ )); do
 	arg=${varArr[$i]}
-	echo $arg
 	case "$arg" in
 		"--vimcmd")
 			# set vim command to the argument after this
@@ -23,10 +22,9 @@ for (( i = 0; i < "${#varArr[@]}"; i++ )); do
 		"--vimflags")
 			# set vim flags to the argument after this
 			let i+=1
-			echo VIMFLAGS=${varArr[i]}
 			vimflags="${varArr[i]}"
 			;;
-		"--literal")
+		"--lit")
 			# everything after this will be sent to Vim literally, ie without creating an omnivim instance.
 			let i+=1
 			for (( j = i; j < ${#varArr[@]}; j++ )); do
@@ -40,8 +38,6 @@ for (( i = 0; i < "${#varArr[@]}"; i++ )); do
 	esac
 done
 
-#echo "$vimcmd | $vimflags"
-#echo "other flags = " ${otherflags[@]}
 
 
 # make sure we're in tmux. If we are...
