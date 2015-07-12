@@ -12,17 +12,28 @@ Pretty simple, but pretty nifty.
 
 Please note that this is still very much a work in progress. The main outline of functionality is all here, but there's some issues to be ironed out. Let me know if you stumble upon things that need fixing and I'll take a look.
 
+
+## Features
+* Separate Vim instances between Tmux windows
+* Custom Vim commands and command line flags
+* Tmux not currently open? Vim opens as normal!
+* Call Vim without omnipresence using a simple flag
+* ...your ideas here...
+
+
 ## Requirements
 Most of these requirements come by default, but it's still nice to let you know.
 * **Tmux** (duh)
   * I've tested 1.9 and 1.9a and they both work fine. Basically so long as you have a version of Tmux that has the send-keys command (which has been around since 2008), then the script *should* work fine. Let me know if they don't, and I'll take a look.
+
 * **Vim** (duh)
   * The only caveat here is that Vim **must** be compiled with the `clientserver` option. There is no way around this, as the script relies heavily on the use of the --servername flag.
   * If you need to check whether your version of Vim has this available, run the following command:
 
   `vim --version | grep clientserver`
   
-  If you see `+clientserver` (the '+' is important), then you're good to go. Otherwise, you'll need to find a way to install Vim with this option - either compile the executable yourself, or find a version that has it compiled.
+  * If you see `+clientserver` (the '+' is important), then you're good to go. Otherwise, you'll need to find a way to install Vim with this option - either compile the executable yourself, or find a version that has it compiled.
+
 * **A shell**
   * I've tested this code most heavily on Bash, so it's guaranteed best to work there. However, I've done some testing on Zsh as well and it works just as well.
   * If you have other shell environments that don't work, then let me know and I'll see what I can do. Alternatively, fix it yourself and send me a pull request.
@@ -34,13 +45,6 @@ Installation is pretty straightforward. Clone the repository with
 `git clone https://github.com/andy-lang/tmux-omnivim.git`
 
 and copy the script to your chosen directory. Make sure it's executable with `chmod +x`, too.
-
-## Features
-* Separate Vim instances between Tmux windows
-* Custom Vim commands and command line flags
-* Tmux not currently open? Vim opens as normal!
-* Call Vim without omnipresence using a simple flag
-* ...your ideas here...
 
 
 ## Known Issues
@@ -64,7 +68,7 @@ Please note that the quotes are *extremely* important. Without them only the fir
 
 > What if I want omnivim to run every time I call Vim?
 
-I'm flattered! You can do this with Bash aliases. Let's assume you've got custom Vim commands and flags that you want called every time as well. Add this to your Bash aliases file:
+I'm flattered! You can do this with Bash aliases. Let's assume you've got custom Vim commands and flags that you want called every time as well, like the ones we just talked about. Add this to your Bash aliases file:
 
 `alias vim="/path/to/omnivim.sh --vimcmd gvim --vimflags \"-n -R\""`
 
