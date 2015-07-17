@@ -34,13 +34,10 @@ for (( i = 0; i < "${#varArr[@]}"; i++ )); do
 			exit
 			;;
 		*)
-			bn=$(basename $SHELL)
-			if [[ $bn == "zsh" ]]; then
-				# zsh is sensitive to spaces
-				otherflags+=("$arg")
-			else
-				# assume otherwise that whitespace will be trimmed
+			if [[ -n $TMUX ]]; then
 				otherflags+=("$arg ")
+			else
+				otherflags+=("$arg")
 			fi
 	esac
 done
