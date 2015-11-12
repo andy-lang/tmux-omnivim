@@ -36,11 +36,7 @@ if IN_TMUX is not None:
 	# So just create a new Vim server with the required arguments
 	subprocess.call([EDITOR, EDITOR_FLAGS, "--servername", tmux_current_window, "--remote-silent"] + files)
 
-# TODO: what to do if not in tmux?
-		
-
-
-
-
-
-	# subprocess.call([EDITOR, 'omnivim.py'])
+else:
+	# otherwise we're not in tmux.
+	# So just launch vim, business as usual, with no added server shenanigans
+	subprocess.call([EDITOR, EDITOR_FLAGS] + files)
