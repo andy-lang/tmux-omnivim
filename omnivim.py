@@ -2,6 +2,13 @@ import os, sys
 import subprocess
 import re
 
+try:
+	from neovim import socket_session, Nvim, attach
+	import argparse
+except ImportError:
+	# no neovim installed on host machine.
+	pass
+
 def call_neovim(editor, editor_flags, files):
 	"""Call neovim with a desired number of flags and files.
 
@@ -15,6 +22,33 @@ def call_neovim(editor, editor_flags, files):
 		files (str): A list of strings containing the files that should be opened.
 	"""
 	print "TODO: call neovim"
+	
+	"""
+	parser = argparse.ArgumentParser(description="Neovim client")
+	# TODO: arguments with particular tmux windows
+	parser.add_argument('--addr', default='tmp/nvim.sock', help="Neovim listen address")
+	parser.add_argument('file', help="file")
+	parser.add_argument('line', type=int, help="line")
+	args = parser.parse_args()
+	
+	session = socket_session(args.addr)
+	nvim = Nvim.from_session(session)
+
+	nvim.command("e {}".format(args.file))
+	nvim.current.window.cursor = (args.line, 0)
+	"""
+
+	# TODO: find if there's any currently running neovim instances
+	# TODO: find current running nvim instance, and send commands to that instead
+	# TODO: if no neovim instances, make a new juan
+	nvim = attach('socket', path='/tmp/nvim')
+	nvim.command('cd ' + os.path.abspath(os.curdir))
+	print os.path.abspath(os.curdir)
+
+	# TODO: is there a better way of doing this?
+	for file in files:
+		nvim.command('e ' + file)
+
 
 def call_vim(editor, editor_flags, files):
 	"""Call vim (or a variant thereof) with a desired number of flags and files.
@@ -37,7 +71,6 @@ def call_vim(editor, editor_flags, files):
 			subprocess.call([editor] + editor_flags + ["--servername", name, "--remote"] + files)
 			sys.exit(0)
 
-	print files
 	# if we hit this point, we didn't find a server.
 	# So just create a new Vim server with the required arguments
 	subprocess.call([editor] + editor_flags + ["--servername", tmux_current_window, "--remote-silent"] + files)
@@ -65,7 +98,6 @@ def main():
 	# we remove the first, since this will always be omnivim.py
 	files = sys.argv
 	files.pop(0)
-	print "files:", files
 	
 	# checking the TMUX environment variable will confirm whether or not tmux is currently running.
 	in_tmux = os.environ.get('TMUX')
