@@ -10,7 +10,7 @@ except ImportError:
 	pass
 
 def call_neovim(editor, editor_flags, files):
-	"""Call neovim with a desired number of flags and files.
+	"""Call Neovim with a desired number of flags and files.
 
 	This is done in a separate function as neovim has a VERY different way of doing things.
 
@@ -22,10 +22,10 @@ def call_neovim(editor, editor_flags, files):
 		files (str): A list of strings containing the files that should be opened.
 	"""
 
-	# if there is already a Neovim session associated with this window, send the commands to it.
 	# all running Neovim instances associated with this script follow the format "/tmp/nvim-@n", where n is the number of the associated tmux window.
 	socketpath='/tmp/nvim-' + subprocess.check_output(["tmux", "display-message", "-p", "#{window_id}"]).rstrip() + '.omni'
 
+	# if there is already a Neovim session associated with this window, send the commands to it.
 	if os.path.exists(socketpath):
 		# socket already associated with this window.
 		# so just attach to it and send the commands
@@ -33,11 +33,12 @@ def call_neovim(editor, editor_flags, files):
 		for file in files:
 			nvim.command('e ' + os.path.join(os.path.abspath(os.curdir), file))
 	else:
-		command = "NVIM_LISTEN_ADDRESS=" + socketpath + ' ' + editor + ' '.join(editor_flags) + ' ' + ' '.join(files)
+		command = ' '.join(["NVIM_LISTEN_ADDRESS=" + socketpath, editor] + editor_flags + files)
 
 		# TODO see if this can be done with the subprocess module instead.
 		# os.system is moving towards deprecation, but a few tests with subprocess.call() weren't successful.
-		os.system(comStr)
+		# I think it's because of that "NVIM_LISTEN_ADDRESS" at the beginning...subprocess doesn't like that.
+		os.system(command)
 
 
 def call_vim(editor, editor_flags, files):
@@ -88,11 +89,12 @@ def main():
 	# we remove the first, since this will always be omnivim.py
 	files = sys.argv
 	files.pop(0)
-	
+
 	# checking the TMUX environment variable will confirm whether or not tmux is currently running.
 	in_tmux = os.environ.get('TMUX')
+	lit_flag = files.count("--lit")
 
-	if in_tmux is not None:
+	if in_tmux is not None and lit_flag == 0:
 		# if tmux is running, then we have different things to do if using neovim or g/vim
 		# use regex to work it out
 		is_neovim = re.search('n(eo)?vim', EDITOR)
@@ -104,6 +106,11 @@ def main():
 			call_vim(EDITOR, EDITOR_FLAGS, files)
 	else:
 		# otherwise, just call the editor and flags with the requisite files, no strings (or servers) attached.
+		while files.count("--lit") > 0:
+			# if lit_flag was passed in, we need to remove it from the list of files before calling
+			# TODO: this is pretty damn hacky.
+			files.pop(files.index("--lit"))
+			
 		subprocess.call([EDITOR] + EDITOR_FLAGS + files)
 
 main()
