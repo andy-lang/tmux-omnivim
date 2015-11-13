@@ -1,24 +1,18 @@
 # tmux-omnivim
-Vim and Tmux, together as one.
+A Vim/Tmux plugin to maintain a single instance of Vim/GVim/Neovim across multiple Tmux panes. Here's how it works:
 
-One of my frustrations with Tmux was that if I had a Vim process open in another pane, typing a Vim command would open files in _that_ pane instead of the one that has Vim already running. I looked around and couldn't find anyone who had come up with a solution, so I wrote my own. Here's how it works...
-
-* If there's no instance of Vim open in any of the panes in the *current* Tmux window, typing a `vim file1 file2` command opens a new Vim instance in the pane in which the command was typed.
+* If there's no instance of Vim open in any of the panes in the *current* Tmux window, typing a `vim file` command opens a new Vim instance in the pane in which the command was typed.
 * If there is a Vim instance open in the current window, then typing a `vim file` command opens those file/s in that running instance.
 * If there is a Vim instance running in *another* window, then typing a `vim file` command opens a new Vim instance.
 
 Pretty simple, but pretty nifty.
 
-Please note that this is still very much a work in progress. The main outline of functionality is all here, but there's some issues to be ironed out. Let me know if you stumble upon things that need fixing and I'll take a look.
-
 
 ## Features
-* Compatability with Neovim, Vim, and GVim
+* Compatability with Neovim, Vim, and GVim (see below)
 * Separate Vim instances between Tmux windows
-* Custom Vim commands and command line flags
 * Tmux not currently open? Vim opens as normal!
-* Call Vim without omnipresence using a simple flag
-* ...your ideas here...
+* Call a separate instance of Vim with the `--lit` flag
 
 # Requirements
 * **Tmux**
@@ -45,17 +39,16 @@ OMNIVIM_EDITOR can also hold flags, if you want. For example:
 
 `export OMNIVIM_EDITOR=gvim -v`
 
-
-## FAQ
-> What if I want omnivim to run every time I call Vim?
-
-I'm flattered! You can do this with aliases in your shell. Let's assume you've got custom Vim commands and flags that you want called every time as well, like the ones we just talked about. Add this as an alias to your shell:
+Then just alias the script command to Vim, like so:
 
 `alias vim="python /path/to/omnivim.py"`
 
+
+## FAQ
+
 > What if I don't want omnivim to run on a particular call, but I have it aliased?
 
-Too easy. Just type `--lit` when you call Vim. Any arguments except this flag will be run through a vanilla Vim session.
+Too easy. Just type `--lit` when you call Vim. Any arguments except this flag will be run as if it was a vanilla Vim session.
 
 For example, let's say you want to run Vundle's `+PluginInstall` flag. To do this, just call:
 
