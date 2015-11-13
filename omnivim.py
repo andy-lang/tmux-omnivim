@@ -14,7 +14,8 @@ def call_neovim(editor, editor_flags, files):
 
 	This is done in a separate function as neovim has a VERY different way of doing things.
 
-	If a running Vim server is found in the current Tmux window, then the files are opened there. Otherwise, a new Vim server instance is created in the pane where the call to this program was made.
+	If a running Neovim server associated with the current Tmux window is found, then the files are opened there.
+	Otherwise, a new Neovim instance is created in the pane where the call to this program was made, with the name in a format that this script knows to recognise.
 
 	Args:
 		editor (str): The editor command that should be called.
@@ -22,18 +23,18 @@ def call_neovim(editor, editor_flags, files):
 		files (str): A list of strings containing the files that should be opened.
 	"""
 
-	# all running Neovim instances associated with this script follow the format "/tmp/nvim-@n", where n is the number of the associated tmux window.
-	socketpath='/tmp/nvim-' + subprocess.check_output(["tmux", "display-message", "-p", "#{window_id}"]).rstrip() + '.omni'
+	# all running Neovim instances associated with this script follow the format "/tmp/nvim-@n.omni", where n is the number of the associated tmux window.
+	socket_path='/tmp/nvim-' + subprocess.check_output(["tmux", "display-message", "-p", "#{window_id}"]).rstrip() + '.omni'
 
-	# if there is already a Neovim session associated with this window, send the commands to it.
-	if os.path.exists(socketpath):
+	if os.path.exists(socket_path):
 		# socket already associated with this window.
 		# so just attach to it and send the commands
-		nvim = attach('socket', path=socketpath)
+		nvim = attach('socket', path=socket_path)
 		for file in files:
 			nvim.command('e ' + os.path.join(os.path.abspath(os.curdir), file))
 	else:
-		command = ' '.join(["NVIM_LISTEN_ADDRESS=" + socketpath, editor] + editor_flags + files)
+		# no associated socket. So we create a new Neovim instance following the format specified above.
+		command = ' '.join(["NVIM_LISTEN_ADDRESS=" + socket_path, editor] + editor_flags + files)
 
 		# TODO see if this can be done with the subprocess module instead.
 		# os.system is moving towards deprecation, but a few tests with subprocess.call() weren't successful.
@@ -44,7 +45,8 @@ def call_neovim(editor, editor_flags, files):
 def call_vim(editor, editor_flags, files):
 	"""Call vim (or a variant thereof) with a desired number of flags and files.
 
-	If a running Vim server is found in the current Tmux window, then the files are opened there. Otherwise, a new Vim server instance is created in the pane where the call to this program was made.
+	If a running Vim server associated with the current Tmux window is found, then the files are opened there.
+	Otherwise, a new Vim instance is created in the pane where the call to this program was made, with the name in a format that this script knows to recognise.
 
 	Args:
 		editor (str): The editor command that should be called.
@@ -54,30 +56,26 @@ def call_vim(editor, editor_flags, files):
 
 	# get the current tmux window in which this command was run
 	tmux_current_window = subprocess.check_output(["tmux", "display-message", "-p", "#{window_id}"]).rstrip()
-
+	# and get a list of servers, as a string split by spaces
 	vim_server_list = str.split(subprocess.check_output([editor] + editor_flags + ['--serverlist']).rstrip())
 
-	for name in vim_server_list:
-		if name == tmux_current_window:
-			subprocess.call([editor] + editor_flags + ["--servername", name, "--remote"] + files)
-			sys.exit(0)
+	try:
+		# if we find a running server, send the commands there
+		i = vim_server_list.index(name)
+		subprocess.call([editor] + editor_flags + ["--servername", name, "--remote"] + files)
+	except:
+		# list.index throws an exception if there's nothing found (seriously why is that a thing)
+		# so if we hit this point, we didn't find a server. So just create a new Vim server with the necessary arguments
+		subprocess.call([editor] + editor_flags + ["--servername", tmux_current_window, "--remote-silent"] + files)
 
-	# if we hit this point, we didn't find a server.
-	# So just create a new Vim server with the required arguments
-	subprocess.call([editor] + editor_flags + ["--servername", tmux_current_window, "--remote-silent"] + files)
 
 def main():
-	# work out the editor.
-
 	# if the OMNIVIM_EDITOR environment variable is set, use it.
-	# otherwise, if the EDITOR variable is set, use that instead.
 	# otherwise, use vim.
 	EDITOR = 'vim'
-	if os.environ.get('OMNIVIM_EDITOR') is not None:
+	if os.environ.get('OMNIVIM_EDITOR') is not None and len(os.environ.get('OMNIVIM_EDITOR')) > 0:
 		EDITOR = os.environ.get('OMNIVIM_EDITOR')
-	elif os.environ.get('EDITOR') is not None:
-		EDITOR = os.environ.get('EDITOR')
-	
+
 	# similar for editor flags. If OMNIVIM_EDITOR_FLAGS is set, use that.
 	# otherwise, use nothing.
 	EDITOR_FLAGS = []
