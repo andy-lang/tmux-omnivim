@@ -37,8 +37,6 @@ def call_neovim(editor, editor_flags, files):
         # no associated socket. So we create a new Neovim instance following the format specified above.
         command = ' '.join(["NVIM_LISTEN_ADDRESS=" + socket_path, editor] + editor_flags + files)
 
-        print "made command"
-
         # TODO see if this can be done with the subprocess module instead.
         # os.system is moving towards deprecation, but a few tests with subprocess.call() weren't successful.
         # I think it's because of that "NVIM_LISTEN_ADDRESS" at the beginning...subprocess doesn't like that.
@@ -77,14 +75,8 @@ def main():
     # otherwise, use vim.
     EDITOR = 'vim'
     if os.environ.get('OMNIVIM_EDITOR') is not None and len(os.environ.get('OMNIVIM_EDITOR')) > 0:
-        EDITOR = os.environ.get('OMNIVIM_EDITOR')
-
-    # similar for editor flags. If OMNIVIM_EDITOR_FLAGS is set, use that.
-    # otherwise, use nothing.
-    EDITOR_FLAGS = []
-    if os.environ.get('OMNIVIM_EDITOR_FLAGS') is not None:
-        EDITOR_FLAGS = str.split(os.environ.get('OMNIVIM_EDITOR_FLAGS').rstrip(), ' ')
-
+        EDITOR_FLAGS = str.split(os.environ.get('OMNIVIM_EDITOR'), ' ')
+        EDITOR = EDITOR_FLAGS.pop(0)
 
     # read files from command line arguments
     # we remove the first, since this will always be omnivim.py

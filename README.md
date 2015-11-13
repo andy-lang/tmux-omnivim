@@ -41,21 +41,23 @@ If you want to use something other than Vim (eg Neovim, GVim), then export the f
 
 `export OMNIVIM_EDITOR=_your Vim variant here_`
 
-And if you want custom flags to run every time, then do the following:
+OMNIVIM_EDITOR can also hold flags, if you want. For example:
 
-`export OMNIVIM_EDITOR_FLAGS=_your flags here_`
+`export OMNIVIM_EDITOR=gvim -v`
 
 
 ## FAQ
 > What if I want omnivim to run every time I call Vim?
 
-I'm flattered! You can do this with Bash aliases. Let's assume you've got custom Vim commands and flags that you want called every time as well, like the ones we just talked about. Add this to your Bash aliases file:
+I'm flattered! You can do this with aliases in your shell. Let's assume you've got custom Vim commands and flags that you want called every time as well, like the ones we just talked about. Add this as an alias to your shell:
 
 `alias vim="python /path/to/omnivim.py"`
 
 > What if I don't want omnivim to run on a particular call, but I have it aliased?
 
-Too easy. Just type `--lit` when you call Vim. Any arguments except this flag will be run through a vanilla Vim session. For example, let's say you want to run Vundle's `+PluginInstall` flag, so you don't want it run through a server. To do this, just call:
+Too easy. Just type `--lit` when you call Vim. Any arguments except this flag will be run through a vanilla Vim session.
+
+For example, let's say you want to run Vundle's `+PluginInstall` flag. To do this, just call:
 
 `vim --lit +PluginInstall`
 
