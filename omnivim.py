@@ -21,33 +21,23 @@ def call_neovim(editor, editor_flags, files):
 		editor_flags (str): A list of strings containing extra flags that should be called alongside the editor of choice.
 		files (str): A list of strings containing the files that should be opened.
 	"""
-	print "TODO: call neovim"
-	
-	"""
-	parser = argparse.ArgumentParser(description="Neovim client")
-	# TODO: arguments with particular tmux windows
-	parser.add_argument('--addr', default='tmp/nvim.sock', help="Neovim listen address")
-	parser.add_argument('file', help="file")
-	parser.add_argument('line', type=int, help="line")
-	args = parser.parse_args()
-	
-	session = socket_session(args.addr)
-	nvim = Nvim.from_session(session)
 
-	nvim.command("e {}".format(args.file))
-	nvim.current.window.cursor = (args.line, 0)
-	"""
+	# if there is already a Neovim session associated with this window, send the commands to it.
+	# all running Neovim instances associated with this script follow the format "/tmp/nvim-@n", where n is the number of the associated tmux window.
+	socketpath='/tmp/nvim-' + subprocess.check_output(["tmux", "display-message", "-p", "#{window_id}"]).rstrip() + '.omni'
 
-	# TODO: find if there's any currently running neovim instances
-	# TODO: find current running nvim instance, and send commands to that instead
-	# TODO: if no neovim instances, make a new juan
-	nvim = attach('socket', path='/tmp/nvim')
-	nvim.command('cd ' + os.path.abspath(os.curdir))
-	print os.path.abspath(os.curdir)
+	if os.path.exists(socketpath):
+		# socket already associated with this window.
+		# so just attach to it and send the commands
+		nvim = attach('socket', path=socketpath)
+		for file in files:
+			nvim.command('e ' + os.path.join(os.path.abspath(os.curdir), file))
+	else:
+		command = "NVIM_LISTEN_ADDRESS=" + socketpath + ' ' + editor + ' '.join(editor_flags) + ' ' + ' '.join(files)
 
-	# TODO: is there a better way of doing this?
-	for file in files:
-		nvim.command('e ' + file)
+		# TODO see if this can be done with the subprocess module instead.
+		# os.system is moving towards deprecation, but a few tests with subprocess.call() weren't successful.
+		os.system(comStr)
 
 
 def call_vim(editor, editor_flags, files):
@@ -114,6 +104,6 @@ def main():
 			call_vim(EDITOR, EDITOR_FLAGS, files)
 	else:
 		# otherwise, just call the editor and flags with the requisite files, no strings (or servers) attached.
-		subprocess.call([editor] + editor_flags + files)
+		subprocess.call([EDITOR] + EDITOR_FLAGS + files)
 
 main()
