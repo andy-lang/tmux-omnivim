@@ -74,6 +74,8 @@ def call_vim(editor, editor_flags, files):
         # list.index throws an exception if there's nothing found (seriously why is that a thing)
         # so if we hit this point, we didn't find a server. So just create a new Vim server with the necessary arguments
         command = [editor] + editor_flags + ['--servername', tmux_current_window, '--remote-silent'] + files
+
+        # the call needs to be run through tmux_send_keys so that tmux recognises that Vim is currently running. This allows vim-tmux-navigator to not break.
         tmux_send_keys(command)
 
 
