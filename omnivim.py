@@ -9,6 +9,14 @@ except ImportError:
     # no neovim installed on host machine.
     pass
 
+def tmux_send_keys(command):
+    """ Call a command as a call to `tmux send-keys`.
+
+    Args:
+        command (str): The command that should be called, as a single string.
+    """
+    subprocess.call(['tmux', 'send-keys', '-l', ' '.join(command), '\r'])
+
 def call_neovim(editor, editor_flags, files):
     """Call Neovim with a desired number of flags and files.
 
@@ -23,7 +31,7 @@ def call_neovim(editor, editor_flags, files):
         files (str): A list of strings containing the files that should be opened.
 """
 
-        # all running Neovim instances associated with this script follow the format "/tmp/nvim-@n.omni", where n is the number of the associated tmux window.
+    # all running Neovim instances associated with this script follow the format "/tmp/nvim-@n.omni", where n is the number of the associated tmux window.
     tmux_current_window = subprocess.check_output(["tmux", "display-message", "-p", "#{window_id}"]).rstrip()
     socket_path='/tmp/nvim-' + tmux_current_window.strip().decode('utf-8') + '.omni'
 
@@ -35,12 +43,10 @@ def call_neovim(editor, editor_flags, files):
             nvim.command('e ' + os.path.join(os.path.abspath(os.curdir), file))
     else:
         # no associated socket. So we create a new Neovim instance following the format specified above.
-        command = ' '.join(["NVIM_LISTEN_ADDRESS=" + socket_path, editor] + editor_flags + files)
+        command = ['NVIM_LISTEN_ADDRESS=' + socket_path, editor] + editor_flags + files
 
-        # TODO see if this can be done with the subprocess module instead.
-        # os.system is moving towards deprecation, but a few tests with subprocess.call() weren't successful.
-        # I think it's because of that "NVIM_LISTEN_ADDRESS" at the beginning...subprocess doesn't like that.
-        os.system(command)
+        # the call needs to be run through tmux_send_keys so that tmux recognises that Vim is currently running. This allows vim-tmux-navigator to not break.
+        tmux_send_keys(command)
 
 
 def call_vim(editor, editor_flags, files):
@@ -67,7 +73,8 @@ def call_vim(editor, editor_flags, files):
     except:
         # list.index throws an exception if there's nothing found (seriously why is that a thing)
         # so if we hit this point, we didn't find a server. So just create a new Vim server with the necessary arguments
-        subprocess.call([editor] + editor_flags + ["--servername", tmux_current_window, "--remote-silent"] + files)
+        command = [editor] + editor_flags + ['--servername', tmux_current_window, '--remote-silent'] + files
+        tmux_send_keys(command)
 
 
 def main():
