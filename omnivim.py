@@ -1,4 +1,4 @@
-import os, sys
+import os, os.path, sys
 import subprocess
 import re
 
@@ -17,7 +17,7 @@ def tmux_send_keys(command):
     """
     subprocess.call(['tmux', 'send-keys', '-l', ' '.join(command), '\r'])
 
-def call_neovim(editor, editor_flags, files):
+def call_neovim(editor, editor_flags, files, nvim_socket_path='/tmp'):
     """Call Neovim with a desired number of flags and files.
 
     This is done in a separate function as neovim has a VERY different way of doing things.
@@ -29,11 +29,12 @@ def call_neovim(editor, editor_flags, files):
         editor (str): The editor command that should be called.
         editor_flags (str): A list of strings containing extra flags that should be called alongside the editor of choice.
         files (str): A list of strings containing the files that should be opened.
+        nvim_socket_path (str): The path where socket files should be stored.
 """
 
     # all running Neovim instances associated with this script follow the format "/tmp/nvim-@n.omni", where n is the number of the associated tmux window.
     tmux_current_window = subprocess.check_output(["tmux", "display-message", "-p", "#{window_id}"]).rstrip()
-    socket_path='/tmp/nvim-' + tmux_current_window.strip().decode('utf-8') + '.omni'
+    socket_path = os.path.join(nvim_socket_path, ''.join(['.nvim-', tmux_current_window.strip().decode('utf-8'), '.omni']))
 
     if os.path.exists(socket_path):
         # socket already associated with this window.
@@ -87,6 +88,11 @@ def main():
         EDITOR_FLAGS = str.split(os.environ.get('OMNIVIM_EDITOR'), ' ')
         EDITOR = EDITOR_FLAGS.pop(0)
 
+    if os.environ.get('NVIM_SOCKET_PATH') is not None and len(os.environ.get('NVIM_SOCKET_PATH')) > 0:
+        NVIM_SOCKET_PATH = os.environ.get('NVIM_SOCKET_PATH')
+    else:
+        NVIM_SOCKET_PATH = '/tmp/'
+
     # read files from command line arguments
     # we remove the first, since this will always be omnivim.py
     files = sys.argv
@@ -103,7 +109,7 @@ def main():
         is_vim = re.search('g?vim', EDITOR)
 
         if is_neovim is not None:
-            call_neovim(EDITOR, EDITOR_FLAGS, files)
+            call_neovim(EDITOR, EDITOR_FLAGS, files, NVIM_SOCKET_PATH)
         elif is_vim is not None:
             call_vim(EDITOR, EDITOR_FLAGS, files)
     else:
