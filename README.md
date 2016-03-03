@@ -56,6 +56,12 @@ For example, let's say you want to run Vundle's `+PluginInstall` flag. To do thi
 
 This is particularly useful if you've got Vim aliased to omnivim, but you want to run some command line flags that don't play well with Vim's clientserver stuff, such as `+PluginInstall`. Alternatively, it's useful if you just want another Vim session open in another pane.
 
+> I don't want socket files for neovim stored in /tmp. Can I specify where to put them?
+
+This is particularly useful if you don't want constant writes to /tmp for whatever reason, such as if it's on a slow drive, or you just want something a bit more organised. To do this, just export a corresponding environment variable, as follows:
+
+`export NVIM_SOCKET_PATH='~/.nvim-sockets/'`
+
 
 ## Miscellaneous
 Thanks to [@deshawnbw](http://github.com/deshawnbw) for a 'starting point' for the script. The initial shell script relied heavily on his [initial work](https://gist.github.com/deshawnbw/2792055), so thanks heaps!
