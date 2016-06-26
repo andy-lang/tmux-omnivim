@@ -84,6 +84,7 @@ def main():
     # if the OMNIVIM_EDITOR environment variable is set, use it.
     # otherwise, use vim.
     EDITOR = 'vim'
+    EDITOR_FLAGS = []
     if os.environ.get('OMNIVIM_EDITOR') is not None and len(os.environ.get('OMNIVIM_EDITOR')) > 0:
         EDITOR_FLAGS = str.split(os.environ.get('OMNIVIM_EDITOR'), ' ')
         EDITOR = EDITOR_FLAGS.pop(0)
@@ -103,14 +104,13 @@ def main():
     lit_flag = files.count("--lit")
 
     if in_tmux is not None and lit_flag == 0:
-        # if tmux is running, then we have different things to do if using neovim or g/vim
+        # if tmux is running, then we have different things to do if using neovim or another form of vim
         # use regex to work it out
         is_neovim = re.search('n(eo)?vim', EDITOR)
-        is_vim = re.search('g?vim', EDITOR)
 
         if is_neovim is not None:
             call_neovim(EDITOR, EDITOR_FLAGS, files, NVIM_SOCKET_PATH)
-        elif is_vim is not None:
+        else:
             call_vim(EDITOR, EDITOR_FLAGS, files)
     else:
     # otherwise, just call the editor and flags with the requisite files, no strings (or servers) attached.
